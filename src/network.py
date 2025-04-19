@@ -1,12 +1,29 @@
 # -*- coding: utf-8 -*-
 import src.helpers as helpers
+from enum import Enum
 import numpy as np
 import random
 
+# Define the Enum for seed options
+class SeedOption(Enum):
+    NO_SEED = 1
+    BGD_SEED = 2
+    SGD_SEED = 3
 
 class Network(object):
 
-    def __init__(self, layers):
+    def __init__(self, layers, seed_option=SeedOption.NO_SEED):
+        # Batch Gradient Descent (BGD) is deterministic because it uses the entire training dataset in each update, regardless of the order.
+        # Stochastic Gradient Descent (SGD) is not supposed to be deterministic because it involves shuffling the data and creating mini-batches,
+        # which introduces randomness into the optimization process. This randomness helps prevent the model from getting stuck in local minima.
+        # Initializing with a fixed seed is helpful for debugging and reproducibility in BGD, as it ensures that weights and biases are always initialized with the same random values.
+        # However, SGD should remain non-deterministic by design. If you use np.random.shuffle instead of random.shuffle for shuffling the data, SGD would become deterministic,
+        # but this goes against the intended behavior of SGD. If want to use the full power of SGD, then no seed to fix here.
+        if seed_option in [SeedOption.BGD_SEED, SeedOption.SGD_SEED]:
+            np.random.seed(42)  # Fixed seed for weights and biases random initialization
+            if seed_option == SeedOption.SGD_SEED:
+                random.seed(42)  # Fixed seed for random.shuffle used for SGD
+
         # List:
         # Containing the number of neurons in the respective layers
         # of the network, thus the input layer + hidden layers + output layer
